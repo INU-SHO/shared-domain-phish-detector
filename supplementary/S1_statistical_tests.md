@@ -11,13 +11,13 @@ LLM configurations (GPT-4.1-mini and Qwen3-8B).
 
 ## S1.1 Motivation
 
-A central claim of this paper is that LLM-based detection methods,
-which do not rely on training data of target services, exhibit a
-fundamentally different generalization behavior compared to ML-based
-methods that are trained on specific services. To support this claim
-statistically, we compare the Seen-vs-Unseen F1 difference between
-FreePhish [Saha Roy et al., 2023] (the ML-based baseline) and our
-proposed method under both LLM configurations.
+ML-based methods such as FreePhish [Saha Roy et al., 2023] are
+expected to degrade on Unseen services because they depend on
+service-specific training data. In contrast, LLM-based methods that
+do not require such training are expected to show little degradation.
+We test this contrast by comparing the Seen-vs-Unseen F1 difference
+between FreePhish and the proposed method under both LLM
+configurations.
 
 ---
 
@@ -25,8 +25,8 @@ proposed method under both LLM configurations.
 
 ### S1.2.1 Choice of Test: Paired t-test
 
-We use a **paired t-test** with the run (or training seed) as the unit
-of analysis. Specifically, for each method:
+We use a **paired t-test** with the run as the unit of analysis.
+Specifically, for each method:
 
 - Each run produces a Seen-condition F1 and an Unseen-condition F1
   evaluated on the same model.
@@ -45,7 +45,7 @@ d = Mean(diff) / SD(diff)
 
 where `diff = Seen F1 - Unseen F1` within each run.
 
-Cohen's conventional benchmarks, extended by Sawilowsky (2009), are:
+Cohen's conventional benchmarks are:
 
 | Cohen's d  | Interpretation |
 |------------|----------------|
@@ -161,9 +161,6 @@ Cohen's conventional benchmarks, extended by Sawilowsky (2009), are:
 | Proposed (LLM-based, GPT-4.1-mini)  | 0.9691 ± 0.0097 | 0.9562 ± 0.0152 | **+0.0128 ± 0.0176** |     2.3079 |          0.0464  | **0.73**   |
 | Proposed (LLM-based, Qwen3-8B)      | 0.8471 ± 0.0310 | 0.7958 ± 0.0221 | **+0.0513 ± 0.0355** |     4.5623 |          0.0014  | **1.45**   |
 
-The test script and raw output are available at
-[`./scripts/paired_ttest.py`](./scripts/paired_ttest.py).
-
 ---
 
 ## S1.4 Interpretation
@@ -212,7 +209,8 @@ times smaller than FreePhish**. We note that the Qwen3-8B
 configuration exhibits a "very large" effect size in absolute terms,
 yet it remains considerably smaller than FreePhish's huge effect,
 indicating that the gap between training-based and training-free
-approaches is preserved even with a smaller LLM.
+approaches is preserved across both LLM configurations of the
+proposed method.
 
 ### S1.4.4 Qualitative Behavior: Distributional Overlap
 
@@ -347,12 +345,6 @@ highlights the qualitative difference noted in S1.4.4:
   Netlify, both around 0.84) exceed the worst Seen service
   (Google Sites, 0.77).
 
-Per-service confusion matrices are omitted because each service is
-evaluated on only 10 samples, making per-service 2x2 cell counts
-highly volatile across runs. Per-service F1 with standard deviation
-provides a more stable summary of per-service behavior at this
-sample size.
-
 ---
 
 ## S1.6 Limitations
@@ -375,9 +367,9 @@ This analysis has the following limitations:
    LLMs may differ from the patterns reported here.
 
 4. **Test choice**: We chose the paired t-test for its alignment with
-   the data structure and hypothesis. Nonparametric alternatives
-   (Wilcoxon signed-rank test) yield qualitatively consistent
-   conclusions.
+   the data structure and hypothesis. Other paired tests (e.g., the
+   Wilcoxon signed-rank test) could provide a nonparametric robustness
+   check.
 
 These limitations do not affect the validity of the main conclusion
 that the magnitude of the Seen-vs-Unseen difference is fundamentally
@@ -387,8 +379,7 @@ different between ML-based and LLM-based approaches.
 
 ## References
 
-- Saha Roy, S., Karanjit, U., & Nilizadeh, S. (2023). Phishing in the
-  Free Waters: A Study of Phishing Attacks Created using Free Website
-  Building Services. *Proceedings of the 2023 ACM on Internet
-  Measurement Conference (IMC '23)*, 268-281.
-  https://doi.org/10.1145/3618257.3624812
+- Saha Roy, S., et al. (2023). Phishing in the Free Waters: A Study
+  of Phishing Attacks Created using Free Website Building Services.
+  *Proceedings of the 2023 ACM on Internet Measurement Conference
+  (IMC '23)*, 268-281. https://doi.org/10.1145/3618257.3624812

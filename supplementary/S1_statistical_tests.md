@@ -4,7 +4,8 @@ This document supplements the main paper "Detecting Phishing on
 Shared-Domain Hosting Services Using LLM-Based Contextual Mismatch
 Reasoning" (ARES 2026) with a statistical comparison of the
 Seen-vs-Unseen performance gap between the ML-based baseline
-(FreePhish) and our proposed LLM-based method.
+(FreePhish) and proposed method evaluated under two
+LLM configurations (GPT-4.1-mini and Qwen3-8B).
 
 ---
 
@@ -16,7 +17,7 @@ fundamentally different generalization behavior compared to ML-based
 methods that are trained on specific services. To support this claim
 statistically, we compare the Seen-vs-Unseen F1 difference between
 FreePhish [Saha Roy et al., 2023] (the ML-based baseline) and our
-proposed method.
+proposed method under both LLM configurations.
 
 We address two related concerns raised in the review:
 
@@ -88,11 +89,11 @@ Cohen's conventional benchmarks are:
 
 ### S1.2.3 Experimental Setup
 
-- **Models compared**: FreePhish (ML-based), our proposed method (LLM-based, GPT-4.1-mini)
+- **Methods compared**: FreePhish (ML-based), our proposed method under two LLM configurations (GPT-4.1-mini and Qwen3-8B)
 - **Dataset**: The Impersonation dataset (100 samples; 50 Seen, 50 Unseen) from the main paper
 - **Number of runs**: 10 per method
   - FreePhish: 10 training seeds (training and prediction stochasticity)
-  - Proposed: 10 evaluation cycles (LLM non-determinism)
+  - Proposed (both configurations): 10 evaluation cycles (LLM non-determinism)
 
 ---
 
@@ -154,14 +155,43 @@ Cohen's conventional benchmarks are:
 
 - Cohen's d = 0.0128 / 0.0176 ≈ **0.73** (medium-to-large)
 
-### S1.3.3 Summary Comparison
+### S1.3.3 Proposed Method (LLM-based, Qwen3-8B)
+
+**Per-cycle F1 scores (10 evaluation cycles):**
+
+| Cycle | Seen F1 | Unseen F1 | Diff (S-U) |
+|-------|--------:|----------:|-----------:|
+| 1     |  0.8772 |    0.7937 |    +0.0835 |
+| 2     |  0.8621 |    0.7813 |    +0.0808 |
+| 3     |  0.7813 |    0.8136 |    -0.0323 |
+| 4     |  0.8475 |    0.7869 |    +0.0606 |
+| 5     |  0.8197 |    0.7742 |    +0.0455 |
+| 6     |  0.8333 |    0.7869 |    +0.0464 |
+| 7     |  0.8621 |    0.7742 |    +0.0879 |
+| 8     |  0.8772 |    0.8065 |    +0.0707 |
+| 9     |  0.8772 |    0.8475 |    +0.0297 |
+| 10    |  0.8333 |    0.7937 |    +0.0397 |
+| **mean ± std** | **0.8471 ± 0.0310** | **0.7958 ± 0.0221** | **+0.0513 ± 0.0355** |
+
+**Paired t-test result:**
+
+- t = 4.5623, df = 9
+- two-tailed *p* = 0.0014
+- one-tailed *p* = 0.0007
+
+**Effect size:**
+
+- Cohen's d = 0.0513 / 0.0355 ≈ **1.45** (very large in absolute terms, but considerably smaller than FreePhish; see S1.4)
+
+### S1.3.4 Summary Comparison
 
 **Table S1.1: Statistical comparison of Seen vs Unseen F1**
 
-| Method                        | Seen F1         | Unseen F1       | Δ (Seen − Unseen) | Paired t   | *p* (two-tailed) | Cohen's d  |
-|-------------------------------|-----------------|-----------------|-------------------|-----------:|-----------------:|-----------:|
-| FreePhish (ML-based)          | 0.6618 ± 0.0655 | 0.4193 ± 0.0412 | **+0.2425 ± 0.0601** |    12.7527 |        < 0.0001  | **4.03**   |
-| Proposed (LLM-based, GPT-4.1-mini) | 0.9691 ± 0.0097 | 0.9562 ± 0.0152 | **+0.0128 ± 0.0176** |     2.3079 |          0.0464  | **0.73**   |
+| Method                              | Seen F1         | Unseen F1       | Δ (Seen − Unseen)    | Paired t   | *p* (two-tailed) | Cohen's d  |
+|-------------------------------------|-----------------|-----------------|----------------------|-----------:|-----------------:|-----------:|
+| FreePhish (ML-based)                | 0.6618 ± 0.0655 | 0.4193 ± 0.0412 | **+0.2425 ± 0.0601** |    12.7527 |        < 0.0001  | **4.03**   |
+| Proposed (LLM-based, GPT-4.1-mini)  | 0.9691 ± 0.0097 | 0.9562 ± 0.0152 | **+0.0128 ± 0.0176** |     2.3079 |          0.0464  | **0.73**   |
+| Proposed (LLM-based, Qwen3-8B)      | 0.8471 ± 0.0310 | 0.7958 ± 0.0221 | **+0.0513 ± 0.0355** |     4.5623 |          0.0014  | **1.45**   |
 
 The test script and raw output are available at
 [`./scripts/paired_ttest.py`](./scripts/paired_ttest.py).
@@ -170,44 +200,51 @@ The test script and raw output are available at
 
 ## S1.4 Interpretation
 
-### S1.4.1 Both Methods Show Statistically Significant Differences
+### S1.4.1 All Three Methods Show Statistically Significant Differences
 
 Strictly speaking, the paired t-test rejects the null hypothesis
-(*p* < 0.05) for **both** methods. Thus, neither method can be said
-to have *literally* no difference between Seen and Unseen
+(*p* < 0.05) for **all three** methods. Thus, none of the methods can
+be said to have *literally* no difference between Seen and Unseen
 performance.
 
 However, statistical significance alone is uninformative about the
 **magnitude** of the difference, especially with small variance.
-Below we compare the two methods through three complementary lenses:
+Below we compare the methods through three complementary lenses:
 absolute difference, effect size, and qualitative behavior.
 
-### S1.4.2 The Magnitude of the Difference Differs by Approximately 19-fold
+### S1.4.2 Absolute Difference
 
 The mean Seen-vs-Unseen difference is:
 
-- FreePhish: **Δ F1 = +0.2425** (Seen substantially higher)
-- Proposed: **Δ F1 = +0.0128** (Seen slightly higher)
+- FreePhish:                  **Δ F1 = +0.2425** (Seen substantially higher)
+- Proposed (GPT-4.1-mini):    **Δ F1 = +0.0128** (Seen slightly higher)
+- Proposed (Qwen3-8B):        **Δ F1 = +0.0513** (Seen moderately higher)
 
-In absolute terms, FreePhish's gap is approximately **19 times
-larger** than the proposed method's gap. For FreePhish, this gap
-represents a 24-percentage-point drop in F1 when moving from Seen
-to Unseen services—a clear and practically meaningful performance
-degradation. For the proposed method, the gap of 1.3 percentage
-points is at or below the scale of run-to-run fluctuation in F1.
+FreePhish's gap is approximately **19 times larger** than the
+GPT-4.1-mini configuration and **4.7 times larger** than the
+Qwen3-8B configuration. For FreePhish, this gap represents a
+24-percentage-point drop in F1 when moving from Seen to Unseen
+services—a clear and practically meaningful performance
+degradation. For the proposed method, the gap is between 1.3 and
+5.1 percentage points depending on the LLM configuration.
 
-### S1.4.3 Effect Sizes Differ by Approximately 5.5-fold
+### S1.4.3 Effect Size
 
 In standardized units (Cohen's d):
 
-- FreePhish: **d = 4.03** (exceptionally large)
-- Proposed: **d = 0.73** (medium-to-large)
+- FreePhish:                  **d = 4.03** (exceptionally large)
+- Proposed (GPT-4.1-mini):    **d = 0.73** (medium-to-large)
+- Proposed (Qwen3-8B):        **d = 1.45** (very large)
 
-While both effect sizes are non-trivial, FreePhish's effect size is
-in the "exceptionally large" range (d > 2.0), well beyond any
-conventional benchmark, whereas the proposed method's effect size
-falls in the "medium-to-large" range. The ratio is approximately
-5.5-fold.
+While all three effect sizes are non-trivial, FreePhish's effect
+size is in the "exceptionally large" range (d > 2.0), well beyond
+any conventional benchmark. The proposed method's effect sizes fall
+in the "medium-to-large" to "very large" range, **2.8 to 5.5 times
+smaller than FreePhish**. We note that the Qwen3-8B configuration
+exhibits a "very large" effect size in absolute terms, yet it
+remains considerably smaller than FreePhish's exceptionally large
+effect, indicating that the gap between training-based and
+training-free approaches is preserved even with a smaller LLM.
 
 ### S1.4.4 Qualitative Behavior: Distributional Overlap
 
@@ -218,14 +255,21 @@ Examining the per-run F1 distributions:
   ([0.3636, 0.4865]) are **completely disjoint**. Every run's
   Seen F1 is strictly higher than every run's Unseen F1.
 
-- For the **proposed method**, the Seen-condition F1 range
-  ([0.9615, 0.9804]) and the Unseen-condition F1 range
+- For the **proposed method with GPT-4.1-mini**, the Seen-condition
+  F1 range ([0.9615, 0.9804]) and the Unseen-condition F1 range
   ([0.9434, 0.9804]) **overlap almost entirely**. In one run, the
   Unseen F1 even exceeds the Seen F1.
 
-This qualitative contrast—complete separation versus near-complete
-overlap—reflects the fundamental difference between training-based
-and training-free approaches.
+- For the **proposed method with Qwen3-8B**, the Seen-condition F1
+  range ([0.7813, 0.8772]) and the Unseen-condition F1 range
+  ([0.7742, 0.8475]) **substantially overlap**, although the
+  overlap is less complete than under GPT-4.1-mini. As with
+  GPT-4.1-mini, one run shows Unseen F1 exceeding Seen F1.
+
+The contrast between FreePhish's complete separation and the
+proposed method's overlapping distributions reflects the
+fundamental difference between training-based and training-free
+approaches.
 
 ### S1.4.5 Conclusion
 
@@ -238,10 +282,11 @@ We conclude that:
    expected behavior of a method that learns service-specific
    patterns from its training data.
 
-2. Our proposed LLM-based method shows a statistically detectable
-   but practically marginal difference between Seen and Unseen
-   services—approximately 19 times smaller in absolute terms and
-   5.5 times smaller in effect size compared to FreePhish. This is
+2. Our proposed LLM-based method, under both LLM configurations,
+   shows a statistically detectable but considerably smaller
+   difference between Seen and Unseen services compared to
+   FreePhish—approximately 4.7 to 19 times smaller in absolute
+   terms and 2.8 to 5.5 times smaller in effect size. This is
    consistent with the expected behavior of a training-free method,
    for which the Seen/Unseen distinction has no special meaning at
    the algorithmic level.
@@ -265,39 +310,55 @@ method behaves on individual services.
 
 | Condition | Service                | F1 (mean ± std) |
 |-----------|------------------------|-----------------|
-| Seen      | weebly                 | 0.5179 ± 0.1387 |
 | Seen      | blogspot               | 1.0000 ± 0.0000 |
+| Seen      | github_pages           | 0.5943 ± 0.1845 |
+| Seen      | google_sites           | 0.6270 ± 0.1858 |
+| Seen      | weebly                 | 0.5179 ± 0.1387 |
 | Seen      | wix                    | 0.3321 ± 0.2242 |
-| Seen      | google sites           | 0.6270 ± 0.1858 |
-| Seen      | github pages           | 0.5943 ± 0.1845 |
-| Unseen    | vercel                 | 0.5933 ± 0.1072 |
-| Unseen    | webflow                | 0.4048 ± 0.1150 |
+| Unseen    | azure_static_web_apps  | 0.5371 ± 0.1656 |
 | Unseen    | netlify                | 0.3476 ± 0.0811 |
 | Unseen    | strikingly             | 0.0000 ± 0.0000 |
-| Unseen    | azure static web apps  | 0.5371 ± 0.1656 |
+| Unseen    | vercel                 | 0.5933 ± 0.1072 |
+| Unseen    | webflow                | 0.4048 ± 0.1150 |
 
 ### S1.5.2 Proposed Method (GPT-4.1-mini)
 
-**Table S1.3: Per-service F1 for the proposed method (mean ± std across 10 cycles)**
+**Table S1.3: Per-service F1 for the proposed method, GPT-4.1-mini (mean ± std across 10 cycles)**
 
-| Condition | Service                | F1 (mean ± std) |
-|-----------|------------------------|-----------------|
-| Seen      | weebly                 | 1.0000 ± 0.0000 |
-| Seen      | blogspot               | 1.0000 ± 0.0000 |
-| Seen      | wix                    | 0.9273 ± 0.0383 |
-| Seen      | google sites           | 0.9273 ± 0.0383 |
-| Seen      | github pages           | 1.0000 ± 0.0000 |
-| Unseen    | vercel                 | 0.9909 ± 0.0287 |
-| Unseen    | webflow                | 0.9636 ± 0.0469 |
-| Unseen    | netlify                | 1.0000 ± 0.0000 |
-| Unseen    | strikingly             | 0.9273 ± 0.0383 |
-| Unseen    | azure static web apps  | 0.9091 ± 0.0000 |
+| Condition | Service               | F1 (mean ± std) |
+|-----------|-----------------------|-----------------|
+| Seen      | blogspot.com          | 1.0000 ± 0.0000 |
+| Seen      | github.io             | 1.0000 ± 0.0000 |
+| Seen      | sites.google.com      | 0.9273 ± 0.0383 |
+| Seen      | weebly.com            | 1.0000 ± 0.0000 |
+| Seen      | wixsite.com           | 0.9273 ± 0.0383 |
+| Unseen    | azurestaticapps.net   | 0.9091 ± 0.0000 |
+| Unseen    | mystrikingly.com      | 0.9273 ± 0.0383 |
+| Unseen    | netlify.app           | 1.0000 ± 0.0000 |
+| Unseen    | vercel.app            | 0.9909 ± 0.0287 |
+| Unseen    | webflow.io            | 0.9636 ± 0.0469 |
 
+### S1.5.3 Proposed Method (Qwen3-8B)
 
-### S1.5.3 Distributional Comparison
+**Table S1.4: Per-service F1 for the proposed method, Qwen3-8B (mean ± std across 10 cycles)**
 
-Comparing the per-service F1 distributions between FreePhish and the
-proposed method highlights the qualitative difference noted in S1.4.4:
+| Condition | Service               | F1 (mean ± std) |
+|-----------|-----------------------|-----------------|
+| Seen      | blogspot.com          | 0.8739 ± 0.0653 |
+| Seen      | github.io             | 0.8879 ± 0.0545 |
+| Seen      | sites.google.com      | 0.7684 ± 0.0668 |
+| Seen      | weebly.com            | 0.8648 ± 0.0504 |
+| Seen      | wixsite.com           | 0.8636 ± 0.0391 |
+| Unseen    | azurestaticapps.net   | 0.7537 ± 0.0391 |
+| Unseen    | mystrikingly.com      | 0.7315 ± 0.0356 |
+| Unseen    | netlify.app           | 0.8435 ± 0.0666 |
+| Unseen    | vercel.app            | 0.8453 ± 0.0665 |
+| Unseen    | webflow.io            | 0.8368 ± 0.0572 |
+
+### S1.5.4 Distributional Comparison
+
+Comparing the per-service F1 distributions across the three methods
+highlights the qualitative difference noted in S1.4.4:
 
 - **FreePhish**: Seen-service F1 spans [0.33, 1.00] and Unseen-service
   F1 spans [0.00, 0.59]. The two distributions barely overlap; the
@@ -305,11 +366,18 @@ proposed method highlights the qualitative difference noted in S1.4.4:
   services, while the best Unseen service (vercel, 0.59) remains
   below the median Seen service.
 
-- **Proposed method**: Seen-service F1 spans [0.93, 1.00] and
-  Unseen-service F1 spans [0.91, 1.00]. The two distributions are
-  almost completely overlapping. Notably, one Unseen service
-  (netlify.app, 1.00) achieves perfect F1, matching the best Seen
-  services.
+- **Proposed method (GPT-4.1-mini)**: Seen-service F1 spans
+  [0.93, 1.00] and Unseen-service F1 spans [0.91, 1.00]. The two
+  distributions are almost completely overlapping. Notably, one
+  Unseen service (netlify.app, 1.00) achieves perfect F1, matching
+  the best Seen services.
+
+- **Proposed method (Qwen3-8B)**: Seen-service F1 spans [0.77, 0.89]
+  and Unseen-service F1 spans [0.73, 0.85]. The two distributions
+  substantially overlap, although the overlap is less complete than
+  under GPT-4.1-mini. The best Unseen services (vercel.app and
+  netlify.app, both around 0.84) exceed the worst Seen service
+  (sites.google.com, 0.77).
 
 Per-service confusion matrices are omitted because each service is
 evaluated on only 10 samples, making per-service 2x2 cell counts
@@ -334,12 +402,9 @@ This analysis has the following limitations:
    services. Generalization of this analysis to other services is
    not directly tested.
 
-3. **Single LLM in main comparison**: The proposed method's
-   comparison uses GPT-4.1-mini. Behavior with other LLMs (e.g.,
-   smaller open-source models) may differ; preliminary results with
-   Qwen3-8B suggest that smaller models may exhibit a somewhat larger
-   Seen-vs-Unseen difference, though still substantially smaller than
-   FreePhish.
+3. **LLM coverage**: The proposed method was evaluated under two LLM
+   configurations (GPT-4.1-mini and Qwen3-8B). Behavior with other
+   LLMs may differ from the patterns reported here.
 
 4. **Test choice**: We chose the paired t-test for its alignment with
    the data structure and hypothesis. Nonparametric alternatives

@@ -45,16 +45,15 @@ d = Mean(diff) / SD(diff)
 
 where `diff = Seen F1 - Unseen F1` within each run.
 
-Cohen's conventional benchmarks are:
+Cohen's conventional benchmarks, extended by Sawilowsky (2009), are:
 
-| Cohen's d  | Interpretation       |
-|------------|----------------------|
-| d < 0.2    | negligible           |
-| 0.2-0.5    | small                |
-| 0.5-0.8    | medium               |
-| 0.8-1.2    | large                |
-| 1.2-2.0    | very large           |
-| d > 2.0    | exceptionally large  |
+| Cohen's d  | Interpretation |
+|------------|----------------|
+| 0.2        | small          |
+| 0.5        | medium         |
+| 0.8        | large          |
+| 1.2        | very large     |
+| 2.0        | huge           |
 
 ### S1.2.3 Experimental Setup
 
@@ -94,7 +93,7 @@ Cohen's conventional benchmarks are:
 
 **Effect size:**
 
-- Cohen's d = 0.2425 / 0.0601 ≈ **4.03** (exceptionally large)
+- Cohen's d = 0.2425 / 0.0601 ≈ **4.03** (huge; well above the 2.0 threshold)
 
 ### S1.3.2 Proposed Method (LLM-based, GPT-4.1-mini)
 
@@ -122,7 +121,7 @@ Cohen's conventional benchmarks are:
 
 **Effect size:**
 
-- Cohen's d = 0.0128 / 0.0176 ≈ **0.73** (medium-to-large)
+- Cohen's d = 0.0128 / 0.0176 ≈ **0.73** (between medium and large)
 
 ### S1.3.3 Proposed Method (LLM-based, Qwen3-8B)
 
@@ -201,19 +200,19 @@ degradation. For the proposed method, the gap is between 1.3 and
 
 In standardized units (Cohen's d):
 
-- FreePhish:                  **d = 4.03** (exceptionally large)
-- Proposed (GPT-4.1-mini):    **d = 0.73** (medium-to-large)
+- FreePhish:                  **d = 4.03** (huge)
+- Proposed (GPT-4.1-mini):    **d = 0.73** (between medium and large)
 - Proposed (Qwen3-8B):        **d = 1.45** (very large)
 
 While all three effect sizes are non-trivial, FreePhish's effect
-size is in the "exceptionally large" range (d > 2.0), well beyond
-any conventional benchmark. The proposed method's effect sizes fall
-in the "medium-to-large" to "very large" range, **2.8 to 5.5 times
-smaller than FreePhish**. We note that the Qwen3-8B configuration
-exhibits a "very large" effect size in absolute terms, yet it
-remains considerably smaller than FreePhish's exceptionally large
-effect, indicating that the gap between training-based and
-training-free approaches is preserved even with a smaller LLM.
+size falls into the "huge" category (d > 2.0), with d = 4.03
+substantially exceeding even this threshold. The proposed method's
+effect sizes fall between "medium" and "very large", **2.8 to 5.5
+times smaller than FreePhish**. We note that the Qwen3-8B
+configuration exhibits a "very large" effect size in absolute terms,
+yet it remains considerably smaller than FreePhish's huge effect,
+indicating that the gap between training-based and training-free
+approaches is preserved even with a smaller LLM.
 
 ### S1.4.4 Qualitative Behavior: Distributional Overlap
 

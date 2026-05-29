@@ -1,4 +1,4 @@
-# S3. Statistical Comparison of Seen vs Unseen Performance: ML-based vs LLM-based
+# S1. Statistical Comparison of Seen vs Unseen Performance: ML-based vs LLM-based
 
 This document supplements the main paper "Detecting Phishing on
 Shared-Domain Hosting Services Using LLM-Based Contextual Mismatch
@@ -8,7 +8,7 @@ Seen-vs-Unseen performance gap between the ML-based baseline
 
 ---
 
-## S3.1 Motivation
+## S1.1 Motivation
 
 A central claim of this paper is that LLM-based detection methods,
 which do not rely on training data of target services, exhibit a
@@ -32,9 +32,9 @@ significance.
 
 ---
 
-## S3.2 Methodology
+## S1.2 Methodology
 
-### S3.2.1 Choice of Test: Paired t-test
+### S1.2.1 Choice of Test: Paired t-test
 
 We use a **paired t-test** with the run (or training seed) as the unit
 of analysis. Specifically, for each method:
@@ -64,7 +64,7 @@ per-service F1 (n=5 vs n=5) for three reasons:
    substantially improves power by removing the run-level variance
    from the comparison.
 
-### S3.2.2 Effect Size: Cohen's d
+### S1.2.2 Effect Size: Cohen's d
 
 To distinguish statistical significance from practical significance,
 we compute **Cohen's d** for paired samples:
@@ -86,7 +86,7 @@ Cohen's conventional benchmarks are:
 | 1.2-2.0    | very large           |
 | d > 2.0    | exceptionally large  |
 
-### S3.2.3 Experimental Setup
+### S1.2.3 Experimental Setup
 
 - **Models compared**: FreePhish (ML-based), our proposed method (LLM-based, GPT-4.1-mini)
 - **Dataset**: The Impersonation dataset (100 samples; 50 Seen, 50 Unseen) from the main paper
@@ -96,9 +96,9 @@ Cohen's conventional benchmarks are:
 
 ---
 
-## S3.3 Results
+## S1.3 Results
 
-### S3.3.1 FreePhish (ML-based)
+### S1.3.1 FreePhish (ML-based)
 
 **Per-run F1 scores (10 training seeds):**
 
@@ -126,7 +126,7 @@ Cohen's conventional benchmarks are:
 
 - Cohen's d = 0.2425 / 0.0601 ≈ **4.03** (exceptionally large)
 
-### S3.3.2 Proposed Method (LLM-based, GPT-4.1-mini)
+### S1.3.2 Proposed Method (LLM-based, GPT-4.1-mini)
 
 **Per-cycle F1 scores (10 evaluation cycles):**
 
@@ -154,9 +154,9 @@ Cohen's conventional benchmarks are:
 
 - Cohen's d = 0.0128 / 0.0176 ≈ **0.73** (medium-to-large)
 
-### S3.3.3 Summary Comparison
+### S1.3.3 Summary Comparison
 
-**Table S3.1: Statistical comparison of Seen vs Unseen F1**
+**Table S1.1: Statistical comparison of Seen vs Unseen F1**
 
 | Method                        | Seen F1         | Unseen F1       | Δ (Seen − Unseen) | Paired t   | *p* (two-tailed) | Cohen's d  |
 |-------------------------------|-----------------|-----------------|-------------------|-----------:|-----------------:|-----------:|
@@ -168,9 +168,9 @@ The test script and raw output are available at
 
 ---
 
-## S3.4 Interpretation
+## S1.4 Interpretation
 
-### S3.4.1 Both Methods Show Statistically Significant Differences
+### S1.4.1 Both Methods Show Statistically Significant Differences
 
 Strictly speaking, the paired t-test rejects the null hypothesis
 (*p* < 0.05) for **both** methods. Thus, neither method can be said
@@ -182,7 +182,7 @@ However, statistical significance alone is uninformative about the
 Below we compare the two methods through three complementary lenses:
 absolute difference, effect size, and qualitative behavior.
 
-### S3.4.2 The Magnitude of the Difference Differs by Approximately 19-fold
+### S1.4.2 The Magnitude of the Difference Differs by Approximately 19-fold
 
 The mean Seen-vs-Unseen difference is:
 
@@ -196,7 +196,7 @@ to Unseen services—a clear and practically meaningful performance
 degradation. For the proposed method, the gap of 1.3 percentage
 points is at or below the scale of run-to-run fluctuation in F1.
 
-### S3.4.3 Effect Sizes Differ by Approximately 5.5-fold
+### S1.4.3 Effect Sizes Differ by Approximately 5.5-fold
 
 In standardized units (Cohen's d):
 
@@ -209,7 +209,7 @@ conventional benchmark, whereas the proposed method's effect size
 falls in the "medium-to-large" range. The ratio is approximately
 5.5-fold.
 
-### S3.4.4 Qualitative Behavior: Distributional Overlap
+### S1.4.4 Qualitative Behavior: Distributional Overlap
 
 Examining the per-run F1 distributions:
 
@@ -227,7 +227,7 @@ This qualitative contrast—complete separation versus near-complete
 overlap—reflects the fundamental difference between training-based
 and training-free approaches.
 
-### S3.4.5 Conclusion
+### S1.4.5 Conclusion
 
 We conclude that:
 
@@ -253,7 +253,73 @@ detection.
 
 ---
 
-## S3.5 Limitations
+## S1.5 Per-service F1 Comparison
+
+While the paired-by-run analysis above operates at the run level, the
+per-service F1 breakdown provides a complementary view of how each
+method behaves on individual services.
+
+### S1.5.1 FreePhish
+
+**Table S1.2: Per-service F1 for FreePhish (mean ± std across 10 seeds)**
+
+| Condition | Service                | F1 (mean ± std) |
+|-----------|------------------------|-----------------|
+| Seen      | weebly                 | 0.5179 ± 0.1387 |
+| Seen      | blogspot               | 1.0000 ± 0.0000 |
+| Seen      | wix                    | 0.3321 ± 0.2242 |
+| Seen      | google sites           | 0.6270 ± 0.1858 |
+| Seen      | github pages           | 0.5943 ± 0.1845 |
+| Unseen    | vercel                 | 0.5933 ± 0.1072 |
+| Unseen    | webflow                | 0.4048 ± 0.1150 |
+| Unseen    | netlify                | 0.3476 ± 0.0811 |
+| Unseen    | strikingly             | 0.0000 ± 0.0000 |
+| Unseen    | azure static web apps  | 0.5371 ± 0.1656 |
+
+### S1.5.2 Proposed Method (GPT-4.1-mini)
+
+**Table S1.3: Per-service F1 for the proposed method (mean ± std across 10 cycles)**
+
+| Condition | Service                | F1 (mean ± std) |
+|-----------|------------------------|-----------------|
+| Seen      | weebly                 | 1.0000 ± 0.0000 |
+| Seen      | blogspot               | 1.0000 ± 0.0000 |
+| Seen      | wix                    | 0.9273 ± 0.0383 |
+| Seen      | google sites           | 0.9273 ± 0.0383 |
+| Seen      | github pages           | 1.0000 ± 0.0000 |
+| Unseen    | vercel                 | 0.9909 ± 0.0287 |
+| Unseen    | webflow                | 0.9636 ± 0.0469 |
+| Unseen    | netlify                | 1.0000 ± 0.0000 |
+| Unseen    | strikingly             | 0.9273 ± 0.0383 |
+| Unseen    | azure static web apps  | 0.9091 ± 0.0000 |
+
+
+### S1.5.3 Distributional Comparison
+
+Comparing the per-service F1 distributions between FreePhish and the
+proposed method highlights the qualitative difference noted in S1.4.4:
+
+- **FreePhish**: Seen-service F1 spans [0.33, 1.00] and Unseen-service
+  F1 spans [0.00, 0.59]. The two distributions barely overlap; the
+  poorest Seen service (wix, 0.33) is comparable to mid-range Unseen
+  services, while the best Unseen service (vercel, 0.59) remains
+  below the median Seen service.
+
+- **Proposed method**: Seen-service F1 spans [0.93, 1.00] and
+  Unseen-service F1 spans [0.91, 1.00]. The two distributions are
+  almost completely overlapping. Notably, one Unseen service
+  (netlify.app, 1.00) achieves perfect F1, matching the best Seen
+  services.
+
+Per-service confusion matrices are omitted because each service is
+evaluated on only 10 samples, making per-service 2x2 cell counts
+highly volatile across runs. Per-service F1 with standard deviation
+provides a more stable summary of per-service behavior at this
+sample size.
+
+---
+
+## S1.6 Limitations
 
 This analysis has the following limitations:
 

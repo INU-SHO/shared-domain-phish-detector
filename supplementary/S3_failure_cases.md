@@ -13,17 +13,19 @@ discussing why each case led to a misjudgment.
 
 ## S3.1 Motivation
 
-A reviewer pointed out that the qualitative case study in the main
-paper presents only a single example, and suggested that a
-structured comparison of Content/Judge outputs across multiple
-failure cases would strengthen the analysis. This document responds
-to that suggestion by presenting the per-component outputs and a
-short interpretation for each failure case.
+The main paper presents a single qualitative case study to
+illustrate how the Brand Analyzer, Content Analyzer, and Judge
+interact when making a decision. Due to page-limit constraints, we
+were unable to include further qualitative examples in the main
+text. This supplementary document complements the main case study
+by presenting additional cases — specifically, the failure cases
+observed in our evaluation — together with the raw per-component
+outputs that led to each misjudgment.
 
-We focus on failures rather than successes because failures are
-diagnostic: they reveal the conditions under which the pipeline's
-reasoning departs from the ground truth and thus suggest concrete
-directions for future improvement.
+We focus on failure cases rather than successes because failures
+are diagnostic: they reveal the conditions under which the
+pipeline's reasoning departs from the ground truth and thus suggest
+concrete directions for future improvement.
 
 ---
 
@@ -57,7 +59,7 @@ type of web page involved.
 
 ## S3.3 False Positives — GPT-4.1-mini
 
-### S3.3.1 Case FP-G1: Vendor Support Page on a Free-Hosting Domain
+### S3.3.1 Case FP-G1: Vendor Support Page
 
 **Page type.** A corporate support page belonging to NCR Voyix, a
 provider of digital commerce solutions (POS, payments, etc.). The
@@ -69,15 +71,23 @@ primary domain.
 
 **Per-component outputs.**
 
-- **Brand Analyzer**: `is_brand = true`, `brand_name = "NCR Voyix"`,
-  `brand_popularity = "low"`.
-- **Content Analyzer**: Identified two sensitive-action prompts:
-  (i) authentication / credential entry via the "Login to MyNCR"
-  call-to-action, and (ii) payment / money transfer via the "Pay
-  now" button. No structural anomalies were noted.
-- **Judge**: `final_verdict = "malicious"`. Rationale: a low-
-  popularity brand hosted on a free-hosting apex domain, combined
-  with explicit prompts for both credential entry and payment.
+- **Brand Analyzer**
+
+```
+"brand_report": {"is_brand": true, "brand_name": "NCR Voyix", "brand_popularity": "low"}
+```
+
+- **Content Analyzer**
+
+```
+"content_report": {"summary": "This appears to be a corporate support information page for NCR Voyix Corporation, providing access links to customer login, developer portal, information products, and additional support resources. It mainly offers navigation to resources and portals without direct forms on this page.", "page_structure": "The page has a well-structured navigation bar with categorized dropdown menus for Restaurant, Retail, Banking, and Company information. The main section includes tiles with images and descriptive texts linking to external or internal portals. No obvious structural anomalies are evident from the available snippet and screenshot wordlist.", "sensitive_action_prompting": "Prompted action: authentication/credential entry. Mechanism: prominent navigational links directing users to login portals. Evidence: button labeled 'Access log in' linking to 'https://mylogin.ncr.com/', also screenshot shows 'Login to MyNCR', 'Sign into MyNCR to access customer information'. Additionally, a 'Pay now' link leads to an invoice payment portal, which prompts payment action. Thus, payment action is also prompted."}
+```
+
+- **Judge**
+
+```
+"final_verdict": "malicious", "rationale": ["The page indicates a specific brand, NCR Voyix, hosted on a free web hosting apex domain, which raises suspicion as per the context for brand impersonation attempts on free hosting.", "There are explicit prompts for sensitive actions including authentication via navigational links to login portals and a 'Pay now' link leading to a payment action, which meets criteria for malicious classification due to steering towards credential entry and payment transfer."]
+```
 
 **Why it failed.** The Judge's reasoning is internally consistent
 with the pipeline's heuristics: NCR Voyix is not in the long tail
@@ -91,7 +101,7 @@ represent. The pipeline currently lacks a mechanism to verify this
 positive linkage, and so it treats the combination of signals as
 sufficient evidence of impersonation.
 
-### S3.3.2 Case FP-G2: Franchise/Restaurant Internal Team Page on a Free-Hosting Domain
+### S3.3.2 Case FP-G2: Franchise Internal Team Page
 
 **Page type.** A Google Sites page operated by an individual
 Chick-fil-A franchise (Chick-fil-A Buda) as an internal
@@ -102,16 +112,23 @@ from external visitors.
 
 **Per-component outputs.**
 
-- **Brand Analyzer**: `is_brand = true`,
-  `brand_name = "Chick-fil-A"`, `brand_popularity = "high"`.
-- **Content Analyzer**: A standard informational layout with a
-  navigation menu and content sections. No structural anomalies
-  and no sensitive-action prompting were identified.
-- **Judge**: `final_verdict = "suspicious"`. Rationale: a
-  well-known brand appearing on a free-hosting apex domain
-  (google.com / sites.google.com) is treated as inherently
-  context-anomalous, and the Judge declines to label such a page
-  benign even in the absence of sensitive-action prompting.
+- **Brand Analyzer**
+
+```
+"brand_report": {"is_brand": true, "brand_name": "Chick-fil-A", "brand_popularity": "high"}
+```
+
+- **Content Analyzer**
+
+```
+"content_report": {"summary": "This appears to be a corporate or organizational informational website for Chick-fil-A Buda, providing team welcome messages, company history, leadership development resources, and benefits information. It invites users to explore various sections about vision, values, and growth opportunities but does not appear to request direct user input or actions beyond navigation.", "page_structure": "The page has a typical corporate informational website structure with a fixed navigation menu on the left side including multiple nested sections and subpages related to company vision, leadership development, benefits, and resources. The content sections are well-organized with headings, paragraphs, and images, and include some interactive elements like expandable menus. There is no indication of structural anomalies or suspicious inconsistencies.", "sensitive_action_prompting": "Nothing in particular"}
+```
+
+- **Judge**
+
+```
+"final_verdict": "suspicious", "rationale": ["The website indicates a well-known brand, Chick-fil-A, hosted on a free web hosting apex domain google.com, which inherently signals suspicion according to the analysis context.", "Despite the absence of sensitive-action prompting and structural anomalies, the presence of a well-known brand on a free-hosted domain is considered a risk factor and thus renders the site suspicious rather than benign."]
+```
 
 **Why it failed.** This case exposes the conservative bias of the
 Judge in the absence of disambiguating signals. The Content
@@ -123,7 +140,7 @@ legitimate use case for shared-domain hosting (Google Sites in
 particular), and the pipeline currently has no way to recognize
 this pattern.
 
-### S3.3.3 Case FP-G3: Product Promotion Page on a Free-Hosting Domain
+### S3.3.3 Case FP-G3: Product Promotion Page
 
 **Page type.** A promotional landing page for SNAP Apple Cider
 Vinegar Gummies, a dietary supplement product. The page is hosted
@@ -133,15 +150,23 @@ link to an external e-commerce site for purchase.
 
 **Per-component outputs.**
 
-- **Brand Analyzer**: `is_brand = true`,
-  `brand_name = "SNAP Apple Cider Vinegar Gummies"`,
-  `brand_popularity = "low"`.
-- **Content Analyzer**: Identified a payment/purchase prompt via
-  prominent "Shop Now Special Offer" and "Submit" buttons linking
-  to an external purchasing URL. No structural anomalies.
-- **Judge**: `final_verdict = "malicious"`. Rationale: low-
-  popularity brand on a free-hosting apex domain + explicit
-  payment/purchase prompting.
+- **Brand Analyzer**
+
+```
+"brand_report": {"is_brand": true, "brand_name": "SNAP Apple Cider Vinegar Gummies", "brand_popularity": "low"}
+```
+
+- **Content Analyzer**
+
+```
+"content_report": {"summary": "This appears to be a promotional product webpage for SNAP Apple Cider Vinegar Gummies, describing the product's benefits, composition, usage, and where to buy it, with calls to action directing users to an external website for purchase.", "page_structure": "The page has a typical product landing page structure with a navigation menu, product title and image, extensive product information sections, and multiple links to external purchase pages. There are no obvious structural anomalies based on the provided DOM and screenshot wordlist.", "sensitive_action_prompting": "Prompted action: payment/purchase. Mechanism: prominent links and buttons labeled 'Submit' and 'Shop Now Special Offer' linking to external purchasing websites. Evidence: DOM contains multiple anchor links to 'perfecthealthtalk.com/get_snap-apple-cider-vinegar-gummies' and button labeled 'Submit'; screenshot shows phrases like 'Submit', 'Shop Now Special Offer', and product purchase related wording."}
+```
+
+- **Judge**
+
+```
+"final_verdict": "malicious", "rationale": ["The website indicates a specific brand named 'SNAP Apple Cider Vinegar Gummies' hosted on a free web hosting domain mystrikingly.com, which is a risk signal as such brand indication on free hosted pages is inherently suspicious.", "The page prompts a sensitive-action related to payment/purchase with multiple prominent links and buttons labeled 'Submit' and 'Shop Now Special Offer' leading to external purchase websites, which combined with the brand indication and hosting context, justifies labeling it malicious."]
+```
 
 **Why it failed.** Conceptually similar to FP-G1: the pipeline
 correctly identifies risk indicators (low-popularity brand, free
@@ -157,7 +182,7 @@ infrastructure choice.
 
 ## S3.4 False Positives — Qwen3-8B
 
-### S3.4.1 Case FP-Q1: Advocacy / Service Promotion Page on a Free-Hosting Domain
+### S3.4.1 Case FP-Q1: Advocacy / Service Promotion Page
 
 **Page type.** A promotional page for CognetZap, a service related
 to internet censorship advocacy/circumvention. The page describes
@@ -167,17 +192,23 @@ the project's mission and provides navigation to "Home", "About",
 
 **Per-component outputs.**
 
-- **Brand Analyzer**: `is_brand = true`, `brand_name = "CognetZap"`,
-  `brand_popularity = "uncertain"`.
-- **Content Analyzer**: Flagged structural irregularities, including
-  repeated "About" navigation entries and duplicated element IDs
-  (`items`). These were interpreted as "potential obfuscation
-  techniques commonly associated with phishing attempts". No
-  sensitive-action prompting was identified.
-- **Judge**: `final_verdict = "suspicious"`. Rationale: brand on a
-  free-hosting apex domain is context-anomalous, and the structural
-  irregularities flagged by the Content Analyzer warrant scrutiny
-  despite the absence of direct sensitive-action prompts.
+- **Brand Analyzer**
+
+```
+"brand_report": {"is_brand": true, "brand_name": "CognetZap", "brand_popularity": "uncertain"}
+```
+
+- **Content Analyzer**
+
+```
+"content_report": {"summary": "Promotional/mission page for CognetZap, appears to focus on internet censorship advocacy and service promotion. Contains links to Home, About, Zap, and contribution sections.", "page_structure": "Multiple links with identical IDs ('items') and repeated 'About' navigation entries suggest potential structural inconsistencies. Excessive use of absolute positioning and hidden elements may indicate unusual layout patterns.", "sensitive_action_prompting": "Nothing in particular"}
+```
+
+- **Judge**
+
+```
+"final_verdict": "suspicious", "rationale": ["The page structure contains repeated 'About' navigation entries and identical IDs ('items'), which suggest potential obfuscation techniques commonly associated with phishing attempts.", "A brand named 'CognetZap' is presented on a free web hosting domain (vercel.app), which is context-anomalous and warrants scrutiny despite the absence of direct sensitive-action prompts."]
+```
 
 **Why it failed.** The case illustrates two challenges. First, the
 Brand Analyzer is uncertain about an unknown small-scale brand, and
@@ -190,19 +221,31 @@ relatively weak signals into a "suspicious" verdict despite the
 lack of any sensitive-action prompting that would normally be
 expected of an impersonation page.
 
-### S3.4.2 Case FP-Q2: Vendor Support Page on a Free-Hosting Domain (same URL as FP-G1)
+### S3.4.2 Case FP-Q2: Vendor Support Page (same URL as FP-G1)
 
 This is the same NCR Voyix support page described in S3.3.1.
 Qwen3-8B reaches the same conclusion as GPT-4.1-mini, with very
-similar per-component outputs:
+similar per-component outputs.
 
-- **Brand Analyzer**: `is_brand = true`,
-  `brand_name = "NCR Voyix"`, `brand_popularity = "low"`.
-- **Content Analyzer**: Identified the same two sensitive-action
-  prompts: authentication via "Login to MyNCR" and payment via
-  "Pay now" button.
-- **Judge**: `final_verdict = "malicious"`. Rationale identical in
-  substance to S3.3.1.
+**Per-component outputs.**
+
+- **Brand Analyzer**
+
+```
+"brand_report": {"is_brand": true, "brand_name": "NCR Voyix", "brand_popularity": "low"}
+```
+
+- **Content Analyzer**
+
+```
+"content_report": {"summary": "Support page for NCR Voyix Corporation, appears to provide information and links to login portals, developer resources, and payment options.", "page_structure": "Navigation menu with sections for Restaurant, Retail, Banking, and Company, containing multiple sub-links organized under headings. Layout appears typical with repeated navbar overlays and standard section grouping. No obvious structural anomalies detected.", "sensitive_action_prompting": "Prompted action: authentication/credential entry. Mechanism: visible login CTA. Evidence: 'Login to MyNCR' section with 'Access log in' button; screenshot shows 'Sign into MyNCR to access customer information'. Prompted action: payment/money transfer. Mechanism: explicit CTA. Evidence: 'Pay your invoice' section with 'Pay now' button; screenshot shows 'Pay now' button text."}
+```
+
+- **Judge**
+
+```
+"final_verdict": "malicious", "rationale": ["The page contains a visible login CTA ('Login to MyNCR') with explicit credential entry prompts, matching security-sensitive action inventory item 1.", "Payment/money transfer is explicitly prompted via 'Pay now' button in a dedicated section, matching security-sensitive action inventory item 4."]
+```
 
 **Why it failed.** The same underlying issue as FP-G1 applies: the
 combination of a low-popularity brand, free-hosting infrastructure,
@@ -229,16 +272,23 @@ service sign-up form).
 
 **Per-component outputs.**
 
-- **Brand Analyzer**: `is_brand = false`, `brand_name = "uncertain"`,
-  `brand_popularity = "uncertain"`. **The model failed to identify
-  the impersonated brand (Netflix).**
-- **Content Analyzer**: Described the page as a typical sign-up
-  page for a streaming service. Reported no structural anomalies
-  and no sensitive-action prompting; in particular, the sign-up
-  flow itself was not flagged as a credential-entry prompt.
-- **Judge**: `final_verdict = "benign"`. Rationale: no structural
-  anomalies, no sensitive-action prompts, no clear brand
-  indication.
+- **Brand Analyzer**
+
+```
+"brand_report": {"is_brand": false, "brand_name": "uncertain", "brand_popularity": "uncertain"}
+```
+
+- **Content Analyzer**
+
+```
+"content_report": {"summary": "A sign-up page for a streaming service (likely Netflix) prompting the user to finish sign-up.", "page_structure": "The layout is typical with sections for features, FAQs, and contact info. No structural anomalies detected.", "sensitive_action_prompting": "Nothing in particular"}
+```
+
+- **Judge**
+
+```
+"final_verdict": "benign", "rationale": ["The page structure shows no structural anomalies, with typical sections for features, FAQs, and contact info that align with legitimate sign-up pages.", "No sensitive-action prompting was identified, and the content does not include authentication fields or cryptocurrency wallet interaction cues."]
+```
 
 **Why it failed.** Two compounding errors led to the false
 negative. First, the Brand Analyzer did not recognize the
@@ -258,66 +308,3 @@ produced a false negative in our 10-run evaluation, and the error
 was not consistent: the pipeline misclassified this sample in 4
 of the 10 runs and classified it correctly in the remaining 6,
 reflecting the run-to-run non-determinism of LLM-based pipelines.
-
----
-
-## S3.6 Discussion
-
-Looking across the six cases, several patterns emerge.
-
-**Pattern 1: Legitimate small-scale or franchise/branch use of
-free hosting is the dominant source of false positives.** All five
-false-positive cases (FP-G1, FP-G2, FP-G3, FP-Q1, FP-Q2) involve
-benign pages where a real (but small or location-specific) entity
-legitimately uses a shared-domain hosting service. The pipeline's
-core heuristic — "real brand on free hosting + signals suggestive
-of a sensitive flow → suspicious or malicious" — is broadly correct
-for genuine impersonation attacks but does not differentiate
-sufficiently between impersonation and legitimate niche usage. This
-suggests a future direction of incorporating a positive-evidence
-check for vendor / franchise legitimacy.
-
-**Pattern 2: Identical failures on the same URL across models
-indicate a pipeline-level limitation, not a model-level one.**
-Cases FP-G1 and FP-Q2 are the same URL misclassified by two
-different LLMs with very similar per-component reasoning. The
-failure therefore cannot be resolved simply by switching to a
-stronger LLM; it reflects how the available signals are combined in
-the Judge's prompt.
-
-**Pattern 3: The false negative reveals a different failure mode:
-brand non-recognition.** In contrast to the false positives, the
-false negative (FN-Q1) is driven by the Brand Analyzer failing to
-identify a major impersonated brand (Netflix). Without that
-identification, the rest of the pipeline has no contextual mismatch
-to reason about. This failure mode is specific to weaker LLMs in
-our experiments and does not occur with GPT-4.1-mini on the same
-data.
-
----
-
-## S3.7 Limitations
-
-This case analysis has the following limitations.
-
-1. **Small number of cases.** Six cases are insufficient to
-   characterize the full distribution of failure modes. The cases
-   are selected for being representative of consistent or
-   near-consistent errors and should not be read as a complete
-   taxonomy.
-
-2. **No external validation of the per-component outputs.** The
-   per-component outputs reported here are the raw outputs of the
-   Brand / Content / Judge components for the case in question; we
-   do not independently audit whether each component's reasoning is
-   "well-formed" beyond its conclusion.
-
-3. **Dataset privacy.** Because the dataset is not yet publicly
-   released, we describe each case in terms of page type and
-   component outputs rather than disclosing URLs, DOM contents, or
-   screenshots. This limits the ability of external readers to
-   verify our characterizations of the pages.
-
-These limitations do not affect the qualitative observations
-discussed in S3.6, but they constrain the strength of any
-quantitative claim that could be drawn from this case analysis.

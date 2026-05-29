@@ -4,7 +4,7 @@ This document supplements the main paper "Detecting Phishing on
 Shared-Domain Hosting Services Using LLM-Based Contextual Mismatch
 Reasoning" (ARES 2026) with a statistical comparison of the
 Seen-vs-Unseen performance gap between the ML-based baseline
-(FreePhish) and proposed method evaluated under two
+(FreePhish) and our proposed LLM-based method evaluated under two
 LLM configurations (GPT-4.1-mini and Qwen3-8B).
 
 ---
@@ -18,18 +18,6 @@ methods that are trained on specific services. To support this claim
 statistically, we compare the Seen-vs-Unseen F1 difference between
 FreePhish [Saha Roy et al., 2023] (the ML-based baseline) and our
 proposed method under both LLM configurations.
-
-We address two related concerns raised in the review:
-
-1. The need for **statistical tests** to assess the significance of
-   the Seen vs Unseen difference.
-2. The **limited sample size** (5 services per condition, 10 runs).
-
-To partially address the second concern, we use a paired-by-run
-analysis that increases statistical power by removing run-level
-variance, and we report both **statistical significance** and
-**effect size** to distinguish statistical from practical
-significance.
 
 ---
 
@@ -45,25 +33,6 @@ of analysis. Specifically, for each method:
 - The pair (Seen F1, Unseen F1) within a run is treated as a paired
   observation.
 - The null hypothesis is `H0: Mean(Seen F1 - Unseen F1) = 0`.
-
-We chose the paired t-test over an unpaired Welch's t-test on
-per-service F1 (n=5 vs n=5) for three reasons:
-
-1. **Data structure**: Within each run, the same model processes both
-   Seen and Unseen services. The two F1 scores are therefore inherently
-   paired, and a substantial portion of the run-to-run variability
-   (e.g., LLM non-determinism, training stochasticity) affects both
-   conditions identically.
-
-2. **Hypothesis alignment**: Our hypothesis concerns the behavior of
-   each *method* across the Seen/Unseen distinction. The natural unit
-   of analysis is each evaluation run, not each individual service.
-
-3. **Statistical power**: With only 5 services per condition, an
-   unpaired service-level test (n=5 vs n=5) has very limited
-   statistical power. The paired-by-run analysis (n=10 pairs)
-   substantially improves power by removing the run-level variance
-   from the comparison.
 
 ### S1.2.2 Effect Size: Cohen's d
 
@@ -92,7 +61,7 @@ Cohen's conventional benchmarks are:
 - **Methods compared**: FreePhish (ML-based), our proposed method under two LLM configurations (GPT-4.1-mini and Qwen3-8B)
 - **Dataset**: The Impersonation dataset (100 samples; 50 Seen, 50 Unseen) from the main paper
 - **Number of runs**: 10 per method
-  - FreePhish: 10 training seeds (training and prediction stochasticity)
+  - FreePhish: 10 training seeds (training stochasticity)
   - Proposed (both configurations): 10 evaluation cycles (LLM non-determinism)
 
 ---
@@ -103,18 +72,18 @@ Cohen's conventional benchmarks are:
 
 **Per-run F1 scores (10 training seeds):**
 
-| Run            | Seen F1 | Unseen F1 | Diff (S-U) |
-|----------------|--------:|----------:|-----------:|
-| pred_seed_01   |  0.6667 |    0.4444 |    +0.2222 |
-| pred_seed_02   |  0.6486 |    0.3871 |    +0.2616 |
-| pred_seed_03   |  0.5946 |    0.3636 |    +0.2310 |
-| pred_seed_04   |  0.7000 |    0.4865 |    +0.2135 |
-| pred_seed_05   |  0.6111 |    0.4706 |    +0.1405 |
-| pred_seed_06   |  0.5556 |    0.3636 |    +0.1919 |
-| pred_seed_07   |  0.6667 |    0.4118 |    +0.2549 |
-| pred_seed_08   |  0.7907 |    0.4211 |    +0.3696 |
-| pred_seed_09   |  0.6842 |    0.4118 |    +0.2724 |
-| pred_seed_10   |  0.7000 |    0.4324 |    +0.2676 |
+| Run   | Seen F1 | Unseen F1 | Diff (S-U) |
+|-------|--------:|----------:|-----------:|
+| 1     |  0.6667 |    0.4444 |    +0.2222 |
+| 2     |  0.6486 |    0.3871 |    +0.2616 |
+| 3     |  0.5946 |    0.3636 |    +0.2310 |
+| 4     |  0.7000 |    0.4865 |    +0.2135 |
+| 5     |  0.6111 |    0.4706 |    +0.1405 |
+| 6     |  0.5556 |    0.3636 |    +0.1919 |
+| 7     |  0.6667 |    0.4118 |    +0.2549 |
+| 8     |  0.7907 |    0.4211 |    +0.3696 |
+| 9     |  0.6842 |    0.4118 |    +0.2724 |
+| 10    |  0.7000 |    0.4324 |    +0.2676 |
 | **mean ± std** | **0.6618 ± 0.0655** | **0.4193 ± 0.0412** | **+0.2425 ± 0.0601** |
 
 **Paired t-test result:**
@@ -310,16 +279,16 @@ method behaves on individual services.
 
 | Condition | Service                | F1 (mean ± std) |
 |-----------|------------------------|-----------------|
-| Seen      | blogspot               | 1.0000 ± 0.0000 |
-| Seen      | github_pages           | 0.5943 ± 0.1845 |
-| Seen      | google_sites           | 0.6270 ± 0.1858 |
-| Seen      | weebly                 | 0.5179 ± 0.1387 |
-| Seen      | wix                    | 0.3321 ± 0.2242 |
-| Unseen    | azure_static_web_apps  | 0.5371 ± 0.1656 |
-| Unseen    | netlify                | 0.3476 ± 0.0811 |
-| Unseen    | strikingly             | 0.0000 ± 0.0000 |
-| Unseen    | vercel                 | 0.5933 ± 0.1072 |
-| Unseen    | webflow                | 0.4048 ± 0.1150 |
+| Seen      | Weebly                 | 0.5179 ± 0.1387 |
+| Seen      | Blogspot               | 1.0000 ± 0.0000 |
+| Seen      | Wix                    | 0.3321 ± 0.2242 |
+| Seen      | Google Sites           | 0.6270 ± 0.1858 |
+| Seen      | GitHub Pages           | 0.5943 ± 0.1845 |
+| Unseen    | Vercel                 | 0.5933 ± 0.1072 |
+| Unseen    | Webflow                | 0.4048 ± 0.1150 |
+| Unseen    | Netlify                | 0.3476 ± 0.0811 |
+| Unseen    | Strikingly             | 0.0000 ± 0.0000 |
+| Unseen    | Azure Static Web Apps  | 0.5371 ± 0.1656 |
 
 ### S1.5.2 Proposed Method (GPT-4.1-mini)
 
@@ -327,16 +296,16 @@ method behaves on individual services.
 
 | Condition | Service               | F1 (mean ± std) |
 |-----------|-----------------------|-----------------|
-| Seen      | blogspot.com          | 1.0000 ± 0.0000 |
-| Seen      | github.io             | 1.0000 ± 0.0000 |
-| Seen      | sites.google.com      | 0.9273 ± 0.0383 |
-| Seen      | weebly.com            | 1.0000 ± 0.0000 |
-| Seen      | wixsite.com           | 0.9273 ± 0.0383 |
-| Unseen    | azurestaticapps.net   | 0.9091 ± 0.0000 |
-| Unseen    | mystrikingly.com      | 0.9273 ± 0.0383 |
-| Unseen    | netlify.app           | 1.0000 ± 0.0000 |
-| Unseen    | vercel.app            | 0.9909 ± 0.0287 |
-| Unseen    | webflow.io            | 0.9636 ± 0.0469 |
+| Seen      | Weebly                | 1.0000 ± 0.0000 |
+| Seen      | Blogspot              | 1.0000 ± 0.0000 |
+| Seen      | Wix                   | 0.9273 ± 0.0383 |
+| Seen      | Google Sites          | 0.9273 ± 0.0383 |
+| Seen      | GitHub Pages          | 1.0000 ± 0.0000 |
+| Unseen    | Vercel                | 0.9909 ± 0.0287 |
+| Unseen    | Webflow               | 0.9636 ± 0.0469 |
+| Unseen    | Netlify               | 1.0000 ± 0.0000 |
+| Unseen    | Strikingly            | 0.9273 ± 0.0383 |
+| Unseen    | Azure Static Web Apps | 0.9091 ± 0.0000 |
 
 ### S1.5.3 Proposed Method (Qwen3-8B)
 
@@ -344,16 +313,16 @@ method behaves on individual services.
 
 | Condition | Service               | F1 (mean ± std) |
 |-----------|-----------------------|-----------------|
-| Seen      | blogspot.com          | 0.8739 ± 0.0653 |
-| Seen      | github.io             | 0.8879 ± 0.0545 |
-| Seen      | sites.google.com      | 0.7684 ± 0.0668 |
-| Seen      | weebly.com            | 0.8648 ± 0.0504 |
-| Seen      | wixsite.com           | 0.8636 ± 0.0391 |
-| Unseen    | azurestaticapps.net   | 0.7537 ± 0.0391 |
-| Unseen    | mystrikingly.com      | 0.7315 ± 0.0356 |
-| Unseen    | netlify.app           | 0.8435 ± 0.0666 |
-| Unseen    | vercel.app            | 0.8453 ± 0.0665 |
-| Unseen    | webflow.io            | 0.8368 ± 0.0572 |
+| Seen      | Weebly                | 0.8648 ± 0.0504 |
+| Seen      | Blogspot              | 0.8739 ± 0.0653 |
+| Seen      | Wix                   | 0.8636 ± 0.0391 |
+| Seen      | Google Sites          | 0.7684 ± 0.0668 |
+| Seen      | GitHub Pages          | 0.8879 ± 0.0545 |
+| Unseen    | Vercel                | 0.8453 ± 0.0665 |
+| Unseen    | Webflow               | 0.8368 ± 0.0572 |
+| Unseen    | Netlify               | 0.8435 ± 0.0666 |
+| Unseen    | Strikingly            | 0.7315 ± 0.0356 |
+| Unseen    | Azure Static Web Apps | 0.7537 ± 0.0391 |
 
 ### S1.5.4 Distributional Comparison
 
@@ -362,22 +331,22 @@ highlights the qualitative difference noted in S1.4.4:
 
 - **FreePhish**: Seen-service F1 spans [0.33, 1.00] and Unseen-service
   F1 spans [0.00, 0.59]. The two distributions barely overlap; the
-  poorest Seen service (wix, 0.33) is comparable to mid-range Unseen
-  services, while the best Unseen service (vercel, 0.59) remains
+  poorest Seen service (Wix, 0.33) is comparable to mid-range Unseen
+  services, while the best Unseen service (Vercel, 0.59) remains
   below the median Seen service.
 
 - **Proposed method (GPT-4.1-mini)**: Seen-service F1 spans
   [0.93, 1.00] and Unseen-service F1 spans [0.91, 1.00]. The two
   distributions are almost completely overlapping. Notably, one
-  Unseen service (netlify.app, 1.00) achieves perfect F1, matching
+  Unseen service (Netlify, 1.00) achieves perfect F1, matching
   the best Seen services.
 
 - **Proposed method (Qwen3-8B)**: Seen-service F1 spans [0.77, 0.89]
   and Unseen-service F1 spans [0.73, 0.85]. The two distributions
   substantially overlap, although the overlap is less complete than
-  under GPT-4.1-mini. The best Unseen services (vercel.app and
-  netlify.app, both around 0.84) exceed the worst Seen service
-  (sites.google.com, 0.77).
+  under GPT-4.1-mini. The best Unseen services (Vercel and
+  Netlify, both around 0.84) exceed the worst Seen service
+  (Google Sites, 0.77).
 
 Per-service confusion matrices are omitted because each service is
 evaluated on only 10 samples, making per-service 2x2 cell counts

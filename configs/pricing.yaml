@@ -1,0 +1,22 @@
+# Per-API prices used by scripts/evaluate.py to compute USD cost per sample.
+# Values reflect publicly listed prices as of 2026-05.
+
+# USD per 1,000,000 tokens.
+# OpenAI pricing: https://developers.openai.com/api/docs/pricing
+openai:
+  # gpt-4.1-mini
+  prompt: 0.40
+  completion: 1.60
+
+qwen:
+  prompt: 0.00
+  completion: 0.00
+
+# USD per 1,000 calls.
+google_apis:
+  # Cloud Vision text_detection.
+  # Pricing: https://cloud.google.com/vision/pricing
+  cloud_vision: 1.50
+  # Custom Search JSON API.
+  # Pricing: https://developers.google.com/custom-search/v1/overview
+  cse: 5.00

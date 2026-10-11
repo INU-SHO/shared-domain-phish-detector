@@ -1,0 +1,37 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Editors / IDEs ---
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# --- Secrets ---
+.env
+secrets/
+
+# --- Logs and runtime output ---
+nohup.out
+*.out
+*.log
+
+# --- OS noise ---
+.DS_Store
+Thumbs.db
+
+# --- Datasets and results (not distributed) ---
+datasets/
+results/

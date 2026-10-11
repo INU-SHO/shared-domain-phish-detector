@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Primary Meta Tags -->
+  <title>Detecting Phishing on Shared-Domain Hosting Services Using LLM-Based Contextual Mismatch Reasoning</title>
+  <meta name="title" content="Detecting Phishing on Shared-Domain Hosting Services Using LLM-Based Contextual Mismatch Reasoning">
+  <meta name="description"
+    content="An LLM-workflow phishing detector for shared-domain hosting services (SHSs) that reasons about the contextual mismatch between brand popularity and sensitive-action prompts on a page.">
+  <meta name="keywords"
+    content="phishing detection, shared-domain hosting services, LLM, contextual mismatch, brand analysis, ARES 2026">
+  <meta name="author" content="Sho Inuzuka, Takaaki Toda, Daiki Chiba, Tatsuya Mori">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://INU-SHO.github.io/shared-domain-phish-detector/">
+  <meta property="og:title" content="Detecting Phishing on Shared-Domain Hosting Services Using LLM-Based Contextual Mismatch Reasoning">
+  <meta property="og:description"
+    content="An LLM-workflow phishing detector that reasons about contextual mismatch between brand popularity and sensitive-action prompts.">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Detecting Phishing on Shared-Domain Hosting Services Using LLM-Based Contextual Mismatch Reasoning">
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://INU-SHO.github.io/shared-domain-phish-detector/">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/panda-syntax-dark.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+
+  <!-- Structured Data for Academic Papers -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ScholarlyArticle",
+    "headline": "Detecting Phishing on Shared-Domain Hosting Services Using LLM-Based Contextual Mismatch Reasoning",
+    "author": [
+      { "@type": "Person", "name": "Sho Inuzuka",   "affiliation": { "@type": "Organization", "name": "Waseda University" } },
+      { "@type": "Person", "name": "Takaaki Toda",  "affiliation": { "@type": "Organization", "name": "Waseda University" } },
+      { "@type": "Person", "name": "Daiki Chiba",   "affiliation": { "@type": "Organization", "name": "Tokyo Metropolitan University" } },
+      { "@type": "Person", "name": "Tatsuya Mori",  "affiliation": { "@type": "Organization", "name": "Waseda University" } }
+    ],
+    "publisher": { "@type": "Organization", "name": "Springer" },
+    "datePublished": "2026"
+  }
+  </script>
+</head>
+
+<body>
+  <!-- Hero Section -->
+  <section class="hero is-light">
+    <div class="hero-body">
+      <div class="container has-text-centered">
+        <!-- Conference Badge -->
+        <span class="tag is-info is-medium mb-4"><a href="https://www.ares-conference.eu/">ARES 2026</a></span>
+
+        <!-- Title -->
+        <h1 class="title is-1 publication-title">
+          Detecting Phishing on Shared-Domain Hosting Services<br>Using LLM-Based Contextual Mismatch Reasoning
+        </h1>
+
+        <!-- Authors -->
+        <div class="is-size-5 publication-authors">
+          <span class="author-block">
+            <a href="mailto:inuzuka@nsl.cs.waseda.ac.jp">Sho Inuzuka</a><sup>1</sup>,
+          </span>
+          <span class="author-block">
+            <a href="mailto:todatakaaki@nsl.cs.waseda.ac.jp">Takaaki Toda</a><sup>1,2</sup>,
+          </span>
+          <span class="author-block">
+            <a href="https://dcl.fpark.tmu.ac.jp/">Daiki Chiba</a><sup>3</sup>,
+          </span>
+          <span class="author-block">
+            <a href="https://nsl.cs.waseda.ac.jp/">Tatsuya Mori</a><sup>1,2,4</sup>
+          </span>
+        </div>
+
+        <!-- Affiliations -->
+        <div class="is-size-6 publication-authors mt-2">
+          <span class="author-block"><sup>1</sup>Waseda University,</span>
+          <span class="author-block"><sup>2</sup>RIKEN AIP,</span>
+          <span class="author-block"><sup>3</sup>Tokyo Metropolitan University,</span>
+          <span class="author-block"><sup>4</sup>NICT</span>
+        </div>
+
+        <!-- Links -->
+        <div class="buttons is-centered mt-5">
+          <!-- TODO: replace with the DOI once published -->
+          <a href="#" class="button is-dark is-rounded">
+            <span class="icon"><i class="fas fa-book"></i></span>
+            <span>Published Paper (coming soon)</span>
+          </a>
+          <!-- TODO: replace with the arXiv preprint URL once available -->
+          <a href="#" class="button is-dark is-rounded">
+            <span class="icon"><i class="fas fa-file-lines"></i></span>
+            <span>Preprint (coming soon)</span>
+          </a>
+          <a href="https://github.com/INU-SHO/shared-domain-phish-detector" class="button is-dark is-rounded" target="_blank">
+            <span class="icon"><i class="fab fa-github"></i></span>
+            <span>Code</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- System Overview Section -->
+  <section class="section">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-10">
+          <figure class="image">
+            <img src="static/images/entire_workflow.png" alt="Overall workflow of the proposed phishing detector"
+              style="max-width: 900px; margin: 0 auto; display: block;">
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Abstract Section -->
+  <section class="section">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-10">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              Phishing attacks that exploit <strong>shared-domain hosting services (SHSs)</strong> are
+              increasing. On these services, many independent user sites coexist under the same
+              provider-managed domain, making conventional URL- and domain-based detection features
+              ineffective.
+            </p>
+            <p>
+              To address this challenge, we leverage large language models (LLMs) and propose an
+              <strong>LLM-workflow-based detection method</strong> consisting of three components:
+              Brand Analyzer, Content Analyzer, and Judge. The proposed method classifies pages based
+              on the <strong>contextual mismatch</strong> arising from the combination of:
+            </p>
+            <ul>
+              <li><strong>Brand popularity</strong></li>
+              <li><strong>Prompts for sensitive actions</strong></li>
+            </ul>
+            <p>
+              The method also outputs the rationale behind its verdict to improve explainability.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Background / Limitations Section -->
+  <section class="section has-background-light">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-10">
+          <h2 class="title is-3">Challenges of Conventional Methods</h2>
+          <div class="content">
+            <p>
+              ML-based methods such as <a href="https://dl.acm.org/doi/10.1145/3618257.3624812">FreePhish</a>
+              have two key limitations when applied to SHSs.
+            </p>
+
+            <div class="columns is-multiline">
+              <div class="column is-12">
+                <div class="box">
+                  <h4 class="title is-5">
+                    <span class="icon has-text-danger"><i class="fas fa-arrow-trend-down"></i></span>
+                    Difficulty of service-agnostic detection
+                  </h4>
+                  <p>
+                    Because URL and HTML structures vary across SHS providers, models trained on a specific
+                    set of services are prone to distribution shift on unseen services, limiting their
+                    ability to generalize across diverse SHSs.
+                  </p>
+                </div>
+              </div>
+
+              <div class="column is-12">
+                <div class="box">
+                  <h4 class="title is-5">
+                    <span class="icon has-text-danger"><i class="fas fa-eye-slash"></i></span>
+                    Inability to capture contextual mismatch
+                  </h4>
+                  <p>
+                    A page on an SHS that strongly indicates a specific brand while prompting sensitive
+                    actions exhibits a contextual mismatch that can serve as a detection cue. However,
+                    ML-based methods, which operate on correlations among individual features, struggle to
+                    capture this higher-level contextual signal.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Method Section -->
+  <section class="section">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-10">
+          <h2 class="title is-3">Proposed Method</h2>
+          <div class="content">
+            <p>
+              The proposed method is organized into two stages: <strong>data preprocessing</strong> and an
+              <strong>LLM workflow</strong>. The method takes as input a URL, its corresponding screenshot,
+              and a DOM snapshot, and outputs a verdict on the target's maliciousness along with the
+              rationale leading to that decision.
+            </p>
+
+            <figure class="image">
+              <img src="static/images/abstract_workflow.png"
+                   alt="Abstract view of the workflow: Data Preprocessing feeds into the LLM Workflow (Brand Analyzer + Content Analyzer, merged by Judge)"
+                   style="width: 100%; max-width: 900px; margin: 1.5rem auto; display: block;">
+            </figure>
+
+            <h3 class="title is-4">Data Preprocessing</h3>
+            <p>
+              The raw inputs are transformed into a set of structured representations suitable for LLM-based
+              analysis. Specifically, the stage produces four elements:
+            </p>
+            <ul>
+              <li><strong>Apex Domain</strong>: extracted from the URL.</li>
+              <li><strong>Screenshot Wordlist</strong>: obtained by applying optical character recognition
+                (OCR) to the screenshot.</li>
+              <li><strong>DOM Title</strong>: extracted from the <code>&lt;title&gt;</code> element.</li>
+              <li><strong>Parsed DOM</strong>: obtained by removing non-content elements from the DOM.</li>
+            </ul>
+
+            <h3 class="title is-4 mt-5">LLM Workflow</h3>
+            <p>
+              The LLM workflow consists of three components that operate in a structured pipeline.
+            </p>
+
+            <div class="columns is-multiline">
+              <div class="column is-12">
+                <div class="box">
+                  <h4 class="title is-5">
+                    <span class="icon has-text-danger"><i class="fas fa-magnifying-glass"></i></span>
+                    Brand Analyzer
+                  </h4>
+                  <p>
+                    Estimates the brand indicated by a given page and quantifies its popularity using both
+                    the LLM's internal knowledge and a web search API.
+                  </p>
+                </div>
+              </div>
+
+              <div class="column is-12">
+                <div class="box">
+                  <h4 class="title is-5">
+                    <span class="icon has-text-info"><i class="fas fa-magnifying-glass"></i></span>
+                    Content Analyzer
+                  </h4>
+                  <p>
+                    Summarizes the page content, describes its structure, and identifies elements that prompt
+                    users toward sensitive actions.
+                  </p>
+                </div>
+              </div>
+
+              <div class="column is-12">
+                <div class="box">
+                  <h4 class="title is-5">
+                    <span class="icon has-text-dark"><i class="fas fa-gavel"></i></span>
+                    Judge
+                  </h4>
+                  <p>
+                    Integrates the outputs of both analyzers in the context that the page is hosted on an SHS,
+                    evaluates the <strong>contextual mismatch</strong> arising from the combination of brand
+                    popularity and prompts for sensitive actions, and produces the final verdict with its
+                    rationale.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dataset Section -->
+  <section class="section has-background-light">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-10">
+          <h2 class="title is-3">Datasets</h2>
+          <div class="content">
+            <p>
+              We evaluated the proposed method on two test datasets: the <strong>Impersonation dataset</strong>
+              and the <strong>Non-impersonation dataset</strong>.
+            </p>
+
+            <h3 class="title is-4">Impersonation Dataset</h3>
+            <p>
+              The Impersonation dataset contains malicious sites that impersonate well-known brands. As shown
+              in table (a) below, the dataset consists of two conditions: 5 services included in FreePhish's
+              training data (<strong>Seen</strong> services) and 5 services not included
+              (<strong>Unseen</strong> services). For each service, we collected 5 benign and 5 malicious
+              samples, yielding 100 samples in total (table (b)). This dataset includes only
+              impersonation-based phishing sites as malicious samples.
+            </p>
+
+            <h3 class="title is-4">Non-impersonation Dataset</h3>
+            <p>
+              The Non-impersonation dataset contains malicious sites that do <em>not</em> impersonate
+              well-known brands. Rather than impersonating brands, these pages appear as ordinary benign
+              pages unrelated to the malicious content they distribute (e.g., yoga or photography pages).
+              They function as link-based doorways that lead visitors to multiple malicious external resources,
+              typically through lists of outbound links or embedded PDF documents. The dataset consists of 14
+              samples (5 benign and 9 malicious) collected from a single Seen service.
+            </p>
+
+            <div class="columns mt-5">
+              <!-- Table 3(a): Services in each condition -->
+              <div class="column is-5">
+                <p class="has-text-centered"><strong>(a) Services in each condition</strong></p>
+                <div class="table-container">
+                  <table class="table is-bordered is-striped is-fullwidth">
+                    <thead>
+                      <tr>
+                        <th class="has-text-centered">Seen</th>
+                        <th class="has-text-centered">Unseen</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>Weebly</td><td>Vercel</td></tr>
+                      <tr><td>Blogger</td><td>Webflow</td></tr>
+                      <tr><td>Wix</td><td>Netlify</td></tr>
+                      <tr><td>Google Sites</td><td>Strikingly</td></tr>
+                      <tr><td>GitHub Pages</td><td>Azure Static Web Apps</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Table 3(b): Sample counts per condition -->
+              <div class="column is-7">
+                <p class="has-text-centered"><strong>(b) Sample counts per condition</strong></p>
+                <div class="table-container">
+                  <table class="table is-bordered is-striped is-fullwidth">
+                    <thead>
+                      <tr>
+                        <th rowspan="2" class="has-text-centered">Dataset</th>
+                        <th colspan="2" class="has-text-centered">Seen</th>
+                        <th colspan="2" class="has-text-centered">Unseen</th>
+                      </tr>
+                      <tr>
+                        <th class="has-text-centered">Benign</th>
+                        <th class="has-text-centered">Malicious</th>
+                        <th class="has-text-centered">Benign</th>
+                        <th class="has-text-centered">Malicious</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Impersonation</td>
+                        <td class="has-text-centered">25</td>
+                        <td class="has-text-centered">25</td>
+                        <td class="has-text-centered">25</td>
+                        <td class="has-text-centered">25</td>
+                      </tr>
+                      <tr>
+                        <td>Non-impersonation<sup>†</sup></td>
+                        <td class="has-text-centered">5</td>
+                        <td class="has-text-centered">9</td>
+                        <td class="has-text-centered">–</td>
+                        <td class="has-text-centered">–</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <p class="is-size-7">
+              <sup>†</sup> All Non-impersonation samples were collected from a single service among the Seen services.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results Section -->
+  <section class="section">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-10">
+          <h2 class="title is-3">Results</h2>
+          <div class="content">
+            <h3 class="title is-4">Accuracy Results on the Impersonation Dataset</h3>
+            <p>
+              To account for variance, we trained FreePhish with 10 different random seeds and ran each
+              LLM-based method 10 times. Mean ± standard deviation is reported.
+            </p>
+
+            <div class="table-container">
+              <table class="table is-bordered is-striped is-hoverable results-table">
+                <thead>
+                  <tr>
+                    <th rowspan="2" class="has-text-centered">Method</th>
+                    <th colspan="4" class="has-text-centered">Seen services</th>
+                    <th colspan="4" class="has-text-centered">Unseen services</th>
+                    <th rowspan="2" class="has-text-centered">Overhead (s)</th>
+                  </tr>
+                  <tr>
+                    <th class="has-text-centered">Acc.</th>
+                    <th class="has-text-centered">Prec.</th>
+                    <th class="has-text-centered">Rec.</th>
+                    <th class="has-text-centered">F1</th>
+                    <th class="has-text-centered">Acc.</th>
+                    <th class="has-text-centered">Prec.</th>
+                    <th class="has-text-centered">Rec.</th>
+                    <th class="has-text-centered">F1</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><a href="https://github.com/UTA-SPRLab/freephish">FreePhish</a></td>
+                    <td class="has-text-centered">0.74±0.04</td>
+                    <td class="has-text-centered">0.95±0.04</td>
+                    <td class="has-text-centered">0.51±0.08</td>
+                    <td class="has-text-centered">0.66±0.07</td>
+                    <td class="has-text-centered">0.60±0.02</td>
+                    <td class="has-text-centered">0.77±0.11</td>
+                    <td class="has-text-centered">0.29±0.04</td>
+                    <td class="has-text-centered">0.42±0.04</td>
+                    <td class="has-text-centered"><strong>0.002<sup>*</sup></strong></td>
+                  </tr>
+                  <tr>
+                    <td><a href="https://www.usenix.org/conference/usenixsecurity24/presentation/li-yuexin">KnowPhish</a></td>
+                    <td class="has-text-centered">0.89±0.01</td>
+                    <td class="has-text-centered">0.94±0.02</td>
+                    <td class="has-text-centered">0.84±0.01</td>
+                    <td class="has-text-centered">0.89±0.01</td>
+                    <td class="has-text-centered">0.97±0.01</td>
+                    <td class="has-text-centered">0.99±0.02</td>
+                    <td class="has-text-centered">0.96±0.00</td>
+                    <td class="has-text-centered"><strong>0.97±0.01</strong></td>
+                    <td class="has-text-centered">2.59±0.25</td>
+                  </tr>
+                  <tr>
+                    <td><a href="https://github.com/code-philia/PhishVLM">PhishVLM</a></td>
+                    <td class="has-text-centered">0.75±0.01</td>
+                    <td class="has-text-centered"><strong>1.00±0.00</strong></td>
+                    <td class="has-text-centered">0.50±0.02</td>
+                    <td class="has-text-centered">0.67±0.02</td>
+                    <td class="has-text-centered">0.67±0.01</td>
+                    <td class="has-text-centered"><strong>1.00±0.00</strong></td>
+                    <td class="has-text-centered">0.35±0.02</td>
+                    <td class="has-text-centered">0.52±0.02</td>
+                    <td class="has-text-centered">7.09±1.44</td>
+                  </tr>
+                  <tr>
+                    <td>Proposed<sup>a</sup></td>
+                    <td class="has-text-centered">0.82±0.04</td>
+                    <td class="has-text-centered">0.74±0.05</td>
+                    <td class="has-text-centered"><strong>1.00±0.00</strong></td>
+                    <td class="has-text-centered">0.85±0.03</td>
+                    <td class="has-text-centered">0.75±0.03</td>
+                    <td class="has-text-centered">0.67±0.03</td>
+                    <td class="has-text-centered">0.98±0.02</td>
+                    <td class="has-text-centered">0.80±0.02</td>
+                    <td class="has-text-centered">15.6±5.93</td>
+                  </tr>
+                  <tr class="is-selected">
+                    <td><strong>Proposed<sup>b</sup></strong></td>
+                    <td class="has-text-centered"><strong>0.97±0.01</strong></td>
+                    <td class="has-text-centered">0.94±0.02</td>
+                    <td class="has-text-centered"><strong>1.00±0.00</strong></td>
+                    <td class="has-text-centered"><strong>0.97±0.01</strong></td>
+                    <td class="has-text-centered">0.95±0.02</td>
+                    <td class="has-text-centered">0.92±0.03</td>
+                    <td class="has-text-centered"><strong>1.00±0.00</strong></td>
+                    <td class="has-text-centered">0.96±0.02</td>
+                    <td class="has-text-centered">6.43±0.74</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="is-size-7">
+              <sup>a</sup> Qwen3-8B; <sup>b</sup> GPT-4.1-mini;
+              <sup>*</sup> FreePhish's full Overhead value is 0.00202 ± 0.00014 s.
+            </p>
+            <p class="is-size-7">
+              Notes. FreePhish is the ML-based baseline; the other methods are LLM-based. Seen/Unseen
+              indicates whether the hosting service is included in the FreePhish training data.
+            </p>
+
+            <h3 class="title is-4 mt-5">Accuracy Results on the Non-impersonation Dataset</h3>
+            <p>
+              Single run per method. Confusion matrix counts (TP, FP, TN, FN) are reported.
+            </p>
+
+            <div class="table-container">
+              <table class="table is-bordered is-striped is-hoverable results-table">
+                <thead>
+                  <tr>
+                    <th class="has-text-centered">Method</th>
+                    <th class="has-text-centered">TP</th>
+                    <th class="has-text-centered">FP</th>
+                    <th class="has-text-centered">TN</th>
+                    <th class="has-text-centered">FN</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><a href="https://github.com/UTA-SPRLab/freephish">FreePhish</a></td>
+                    <td class="has-text-centered">0</td>
+                    <td class="has-text-centered">0</td>
+                    <td class="has-text-centered">5</td>
+                    <td class="has-text-centered">9</td>
+                  </tr>
+                  <tr>
+                    <td><a href="https://www.usenix.org/conference/usenixsecurity24/presentation/li-yuexin">KnowPhish</a></td>
+                    <td class="has-text-centered">0</td>
+                    <td class="has-text-centered">0</td>
+                    <td class="has-text-centered">5</td>
+                    <td class="has-text-centered">9</td>
+                  </tr>
+                  <tr>
+                    <td><a href="https://github.com/code-philia/PhishVLM">PhishVLM</a></td>
+                    <td class="has-text-centered">0</td>
+                    <td class="has-text-centered">0</td>
+                    <td class="has-text-centered">5</td>
+                    <td class="has-text-centered">9</td>
+                  </tr>
+                  <tr class="is-selected">
+                    <td><strong>Proposed (Qwen3-8B)</strong></td>
+                    <td class="has-text-centered"><strong>9</strong></td>
+                    <td class="has-text-centered">1</td>
+                    <td class="has-text-centered">4</td>
+                    <td class="has-text-centered"><strong>0</strong></td>
+                  </tr>
+                  <tr>
+                    <td>Proposed (GPT-4.1-mini)</td>
+                    <td class="has-text-centered">7</td>
+                    <td class="has-text-centered">0</td>
+                    <td class="has-text-centered">5</td>
+                    <td class="has-text-centered">2</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Case Study Section -->
+  <section class="section has-background-light" id="case-study">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-10">
+          <h2 class="title is-3">Case Study</h2>
+          <div class="content">
+            <p>
+              The following is a case in which the proposed method (GPT-4.1-mini) correctly classified a
+              phishing site on an SHS as <code>Malicious</code>. The phishing site is a login page
+              impersonating <strong>AT&amp;T</strong>, a major U.S. telecommunications provider. Below are
+              the outputs of each component.
+            </p>
+          </div>
+
+          <!-- Parallel Analyzers → Judge Pipeline -->
+          <div class="pipeline">
+            <div class="columns is-multiline">
+              <!-- Brand Analyzer -->
+              <div class="column is-6">
+                <div class="analyzer-box brand-analyzer">
+                  <div class="analyzer-header">
+                    <span class="icon"><i class="fas fa-magnifying-glass"></i></span>
+                    <div class="analyzer-title-group"><div class="analyzer-title">Brand Report</div><div class="analyzer-subtitle">from Brand Analyzer</div></div>
+                  </div>
+                  <div class="analyzer-body">
+                    <div class="report-field">
+                      <div class="field-label">Indicates Brand</div>
+                      <div class="field-value">true</div>
+                    </div>
+                    <div class="report-field">
+                      <div class="field-label">Brand Name</div>
+                      <div class="field-value">AT&amp;T</div>
+                    </div>
+                    <div class="report-field">
+                      <div class="field-label">Brand Popularity</div>
+                      <div class="field-value">high</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Content Analyzer -->
+              <div class="column is-6">
+                <div class="analyzer-box content-analyzer">
+                  <div class="analyzer-header">
+                    <span class="icon"><i class="fas fa-magnifying-glass"></i></span>
+                    <div class="analyzer-title-group"><div class="analyzer-title">Content Report</div><div class="analyzer-subtitle">from Content Analyzer</div></div>
+                  </div>
+                  <div class="analyzer-body">
+                    <div class="report-field">
+                      <div class="field-label">Summary</div>
+                      <div class="field-value">
+                        This appears to be a login page asking users to enter their User ID and Password to sign
+                        in, likely for accessing an AT&amp;T Mail service, based on visible prompts and labels.
+                      </div>
+                    </div>
+                    <div class="report-field">
+                      <div class="field-label">Structure Notes</div>
+                      <div class="field-value">
+                        The page structure is typical for a login form with input fields and a submit button
+                        within a centered layout. The DOM and screenshot show consistent labeling and no
+                        structural anomalies.
+                      </div>
+                    </div>
+                    <div class="report-field">
+                      <div class="field-label">Sensitive Action Prompting</div>
+                      <div class="field-value">
+                        Prompted action: authentication / credential entry. Mechanism: on-page form with text
+                        inputs for "User ID" and "Password", and a prominent "Continue" button.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Merger Arrow -->
+            <div class="merger-arrow">
+              <svg viewBox="0 0 400 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <!-- Left branch -->
+                <path d="M 100 0 Q 100 40 200 40" stroke="#363636" stroke-width="3" fill="none"/>
+                <!-- Right branch -->
+                <path d="M 300 0 Q 300 40 200 40" stroke="#363636" stroke-width="3" fill="none"/>
+                <!-- Trunk -->
+                <line x1="200" y1="40" x2="200" y2="70" stroke="#363636" stroke-width="3"/>
+                <!-- Arrowhead -->
+                <polygon points="192,65 208,65 200,80" fill="#363636"/>
+              </svg>
+            </div>
+
+            <!-- Judge -->
+            <div class="analyzer-box judge-box">
+              <div class="analyzer-header">
+                <span class="icon"><i class="fas fa-gavel"></i></span>
+                <div class="analyzer-title-group"><div class="analyzer-title">Final Report</div><div class="analyzer-subtitle">from Judge</div></div>
+              </div>
+              <div class="analyzer-body">
+                <div class="report-field">
+                  <div class="field-label">Final Verdict</div>
+                  <div class="field-value"><span class="tag is-danger is-medium">Malicious</span></div>
+                </div>
+                <div class="report-field">
+                  <div class="field-label">Rationale</div>
+                  <ul class="field-value field-list">
+                    <li>
+                      The website impersonates a well-known brand (AT&amp;T) hosted on a free hosting
+                      domain (weebly.com), which is a contextual anomaly and inherently
+                      suspicious given the brand and hosting context rules.
+                    </li>
+                    <li>
+                      The page prompts a sensitive action, specifically authentication credential entry
+                      (User ID and Password for sign-in), which combined with the well-known brand
+                      indication on free hosting is a strong indicator of malicious intent as phishing.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Appendix / Supplementary Section -->
+  <section class="section" id="appendix">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-10">
+          <h2 class="title is-3">Appendix</h2>
+          <div class="content">
+            <p>
+              The following appendices support claims in the paper. Click any card to open its dedicated page.
+            </p>
+
+            <div class="columns is-multiline">
+              <div class="column is-12">
+                <a class="box appendix-card" href="appendix/A_statistical_tests.html">
+                  <div class="appendix-card-inner">
+                    <h4 class="title is-5 mb-0">
+                      <span class="icon has-text-info"><i class="fas fa-calculator"></i></span>
+                      <span>A. Statistical Comparison of Seen and Unseen Conditions</span>
+                    </h4>
+                    <span class="icon appendix-card-arrow">
+                      <i class="fas fa-arrow-right"></i>
+                    </span>
+                  </div>
+                </a>
+              </div>
+
+              <div class="column is-12">
+                <a class="box appendix-card" href="appendix/B_sensitivity_analysis.html">
+                  <div class="appendix-card-inner">
+                    <h4 class="title is-5 mb-0">
+                      <span class="icon has-text-success"><i class="fas fa-gem"></i></span>
+                      <span>B. Sensitivity to Reference Brand Selection</span>
+                    </h4>
+                    <span class="icon appendix-card-arrow">
+                      <i class="fas fa-arrow-right"></i>
+                    </span>
+                  </div>
+                </a>
+              </div>
+
+              <div class="column is-12">
+                <a class="box appendix-card" href="appendix/C_failure_cases.html">
+                  <div class="appendix-card-inner">
+                    <h4 class="title is-5 mb-0">
+                      <span class="icon has-text-danger"><i class="fas fa-circle-xmark"></i></span>
+                      <span>C. Failure Case Analysis</span>
+                    </h4>
+                    <span class="icon appendix-card-arrow">
+                      <i class="fas fa-arrow-right"></i>
+                    </span>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BibTeX Section -->
+  <section class="section has-background-light" id="bibtex">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-10">
+          <h2 class="title is-3">BibTeX</h2>
+          <div class="bibtex-container">
+            <button class="button is-small is-pulled-right copy-button" onclick="copyBibtex()">
+              <span class="icon"><i class="fas fa-copy"></i></span>
+              <span>Copy</span>
+            </button>
+            <pre id="bibtex-text"><code class="language-tex">@inproceedings{inuzuka2026shs,
+  author    = {Sho Inuzuka and Takaaki Toda and Daiki Chiba and Tatsuya Mori},
+  title     = {{Detecting Phishing on Shared-Domain Hosting Services Using LLM-Based Contextual Mismatch Reasoning}},
+  booktitle = {Proceedings of the 21st International Conference on Availability, Reliability and Security},
+  year      = {2026}
+}</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Acknowledgments Section -->
+  <section class="section">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-10">
+          <h2 class="title is-3">Acknowledgments</h2>
+          <div class="content">
+            <p>
+              This paper is based on results obtained from a project, JPNP24003, commissioned by the New Energy and 
+              Industrial Technology Development Organization (NEDO).
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="content has-text-centered">
+        <p>
+          This page was built using the
+          <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project
+            Page Template</a>
+          which was adopted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+        </p>
+        <p>
+          This website is licensed under a
+          <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">
+            Creative Commons Attribution-ShareAlike 4.0 International License
+          </a>.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scroll to Top Button -->
+  <button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+
+  <!-- Activate Highlight JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script>
+    hljs.highlightAll();
+  </script>
+  <!-- JavaScript -->
+  <script src="static/js/index.js"></script>
+</body>
+
+</html>
